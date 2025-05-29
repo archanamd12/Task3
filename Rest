@@ -1,0 +1,67 @@
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+
+let books = [];
+let nextId = 1;
+
+
+app.get('/books', (req, res) => {
+  res.json(books);
+});
+
+
+app.post('/books', (req, res) => {
+  const { title, author } = req.body;
+
+  
+  if (!title || !author) {
+    return res.status(400).json({ error: 'Title and author are required' });
+  }
+
+  const newBook = { id: nextId, title, author };
+  books.push(newBook);
+  nextId += 1; 
+  res.status(201).json(newBook); 
+});
+
+app.put('/books/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const book = books.find(b => b.id === id);
+
+  
+  if (book) {
+    const { title, author } = req.body;
+
+    
+    if (title) book.title = title;
+    if (author) book.author = author;
+
+    res.json(book); 
+  } else {
+    res.status(404).json({ error: 'Book not found' }); 
+}
+});
+
+
+app.delete('/books/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const initialLength = books.length;
+
+ 
+  books = books.filter(b => b.id !== id);
+
+
+  if (books.length < initialLength) {
+    res.send('Book deleted'); 
+  } else {
+    res.status(404).json({ error: 'Book not found' });
+  }
+});
+
+
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+
